@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Queue Visualizer & Guide</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #22c55e;
+            --danger: #ef4444;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            color: var(--text-color);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .theory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .theory-item h3 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+        }
+
+        .theory-item p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Controls Section */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        input {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.btn-danger {
+            background-color: var(--danger);
+        }
+        button.btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* Visualizer Area */
+        .visualizer-container {
+            min-height: 120px;
+            background: var(--bg-color);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow-x: auto;
+        }
+
+        .queue-empty {
+            color: var(--text-muted);
+            font-style: italic;
+            width: 100%;
+            text-align: center;
+        }
+
+        .queue-node {
+            background: linear-gradient(135deg, #3b82f6, var(--primary));
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease-in-out;
+            position: relative;
+        }
+
+        .queue-node .val {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .queue-node .priority {
+            font-size: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .log-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Priority Queue Explorer</h1>
+            <p>Understand how elements are organized by priority rather than just insertion order.</p>
+        </header>
+
+        <!-- Theory Section -->
+        <div class="card">
+            <h2>What is a Priority Queue?</h2>
+            <p>Unlike a standard Queue (FIFO - First In, First Out), a <strong>Priority Queue</strong> assigns a priority to each element. Elements with higher priorities are served before elements with lower priorities, regardless of when they arrived.</p>
+            
+            <div class="theory-grid">
+                <div class="theory-item">
+                    <h3>Real-World Analogy</h3>
+                    <p>Emergency room triage: Patients with life-threatening injuries are treated first, even if they arrived after someone with a minor cold.</p>
+                </div>
+                <div class="theory-item">
+                    <h3>Core Operations</h3>
+                    <p><strong>Insert (Enqueue):</strong> Adds an element with a specific priority.<br><strong>Extract (Dequeue):</strong> Removes and returns the highest-priority element.</p>
+                </div>
+                <div class="theory-item">
+                    <h3>Under the Hood</h3>
+                    <p>Often implemented using a <strong>Binary Heap</strong> data structure, allowing fast $O(\log n)$ insertions and extractions.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Visualizer -->
+        <div class="card">
+            <h2>Interactive Visualizer</h2>
+            
+            <div class="controls">
+                <div class="input-group">
+                    <label for="elementValue">Value / Item</label>
+                    <input type="text" id="elementValue" placeholder="e.g., Task A">
+                </div>
+                <div class="input-group">
+                    <label for="elementPriority">Priority (Higher = Earlier)</label>
+                    <input type="number" id="elementPriority" value="1" placeholder="e.g., 5">
+                </div>
+                <div class="btn-group">
+                    <button id="insertBtn">Insert</button>
+                    <button id="extractBtn" class="btn-danger">Extract Max</button>
+                </div>
+            </div>
+
+            <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; display:block;">Current Queue State (Sorted by Priority)</label>
+            <div class="visualizer-container" id="visualizer">
+                <div class="queue-empty">Queue is empty. Add some elements!</div>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display:block;">Activity Log</label>
+                <div class="log-box" id="logBox">System ready. Enter values to begin.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple Priority Queue implementation using an array
+        class PriorityQueue {
+            constructor() {
+                this.items = [];
+            }
+
+            insert(val, priority) {
+                const element = { val, priority: Number(priority) };
+                let added = false;
+
+                // Higher priority comes first. If priorities are equal, maintain FIFO order.
+                for (let i = 0; i < this.items.length; i++) {
+                    if (element.priority > this.items[i].priority) {
+                        this.items.splice(i, 0, element);
+                        added = true;
+                        break;
+                    }
+                }
+
+                if (!added) {
+                    this.items.push(element);
+                }
+            }
+
+            extractMax() {
+                if (this.isEmpty()) return null;
+                return this.items.shift();
+            }
+
+            isEmpty() {
+                return this.items.length === 0;
+            }
+
+            getItems() {
+                return this.items;
+            }
+        }
+
+        const pq = new PriorityQueue();
+
+        const valueInput = document.getElementById('elementValue');
+        const priorityInput = document.getElementById('elementPriority');
+        const insertBtn = document.getElementById('insertBtn');
+        const extractBtn = document.getElementById('extractBtn');
+        const visualizer = document.getElementById('visualizer');
+        const logBox = document.getElementById('logBox');
+
+        function log(message) {
+            logBox.innerHTML += `<br>> ${message}`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function updateVisualizer() {
+            const items = pq.getItems();
+            visualizer.innerHTML = '';
+
+            if (items.length === 0) {
+                visualizer.innerHTML = '<div class="queue-empty">Queue is empty. Add some elements!</div>';
+                return;
+            }
+
+            items.forEach((item, index) => {
+                const node = document.createElement('div');
+                node.className = 'queue-node';
+                if (index === 0) {
+                    node.style.border = '2px solid var(--accent)'; // Highlight top priority
+                }
+                node.innerHTML = `
+                    <span class="val">${item.val}</span>
+                    <span class="priority">P: ${item.priority}</span>
+                `;
+                visualizer.appendChild(node);
+            });
+        }
+
+        insertBtn.addEventListener('click', () => {
+            const val = valueInput.value.trim();
+            const priority = priorityInput.value;
+
+            if (!val) {
+                alert('Please enter a valid value/item name.');
+                return;
+            }
+
+            pq.insert(val, priority);
+            log(`Inserted "${val}" with priority ${priority}`);
+            
+            valueInput.value = '';
+            priorityInput.value = '1';
+            valueInput.focus();
+            updateVisualizer();
+        });
+
+        extractBtn.addEventListener('click', () => {
+            if (pq.isEmpty()) {
+                log(`Extraction failed: Queue is empty.`);
+                alert('Queue is empty!');
+                return;
+            }
+
+            const extracted = pq.extractMax();
+            log(`Extracted highest priority element: "${extracted.val}" (Priority: ${extracted.priority})`);
+            updateVisualizer();
+        });
+
+        // Allow pressing Enter to insert
+        valueInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') insertBtn.click();
+        });
+        priorityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') insertBtn.click();
+        });
+    </script>
+</body>
+</html>
